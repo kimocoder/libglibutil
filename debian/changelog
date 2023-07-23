@@ -1,3 +1,37 @@
+libglibutil (1.0.71) unstable; urgency=low
+
+  * Added gutil_object_ref()
+  * Added gutil_object_unref()
+  * Added gutil_objv_append()
+  * Added gutil_objv_insert()
+  * Added gutil_ptrv_is_empty()
+  * Added gutil_bin2hex()
+  * Added gutil_data2hex()
+
+ -- Slava Monich <slava@monich.com>  Sun, 18 Jun 2023 14:24:13 +0300
+
+libglibutil (1.0.70) unstable; urgency=low
+
+  * Added gutil_objv module
+
+ -- Slava Monich <slava@monich.com>  Mon, 29 May 2023 01:35:08 +0300
+
+libglibutil (1.0.69) unstable; urgency=low
+
+  * Runtime and compile time version detection
+  * Added gutil_datapack module
+  * Require glib 2.32
+
+ -- Slava Monich <slava@monich.com>  Thu, 06 Apr 2023 02:13:48 +0300
+
+libglibutil (1.0.68) unstable; urgency=low
+
+  * Added gutil_weakref module
+  * Fixed a few compilation warnings
+  * Packaging tweaks
+
+ -- Slava Monich <slava@monich.com>  Sat, 04 Feb 2023 04:26:45 +0200
+
 libglibutil (1.0.67) unstable; urgency=low
 
   * Added gutil_log_dump_bytes()

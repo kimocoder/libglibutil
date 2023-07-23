@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
  * Copyright (C) 2023 Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,42 +29,56 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_TYPES_H
-#define GUTIL_TYPES_H
+#ifndef GUTIL_VERSION_H
+#define GUTIL_VERSION_H
 
-#include <glib.h>
-#include <string.h>
-#include <stdio.h>
+#include "gutil_types.h"
+
+/*
+ * GUTIL_VERSION_X_Y_Z macros will be added with each release. The fact that
+ * such macro is defined means that you're compiling against libgutil version
+ * X.Y.Z or greater.
+ *
+ * Since 1.0.69
+ */
 
 G_BEGIN_DECLS
 
-typedef char* GStrV;
-typedef struct gutil_idle_pool GUtilIdlePool;
-typedef struct gutil_idle_queue GUtilIdleQueue;
-typedef struct gutil_ints GUtilInts;
-typedef struct gutil_int_array GUtilIntArray;
-typedef struct gutil_int_history GUtilIntHistory;
-typedef struct gutil_inotify_watch GUtilInotifyWatch;
-typedef struct gutil_ring GUtilRing;
-typedef struct gutil_time_notify GUtilTimeNotify;
-typedef struct gutil_weakref GUtilWeakRef; /* Since 1.0.68 */
+#define GUTIL_VERSION_MAJOR   1
+#define GUTIL_VERSION_MINOR   0
+#define GUTIL_VERSION_MICRO   71
+#define GUTIL_VERSION_STRING  "1.0.71"
 
-typedef struct gutil_data {
-    const guint8* bytes;
-    gsize size;
-} GUtilData;
+extern const guint gutil_version_major; /* GUTIL_VERSION_MAJOR */
+extern const guint gutil_version_minor; /* GUTIL_VERSION_MINOR */
+extern const guint gutil_version_micro; /* GUTIL_VERSION_MICRO */
 
-typedef struct gutil_range {
-    const guint8* ptr;
-    const guint8* end;
-} GUtilRange; /* Since 1.0.54 */
+/* Version as a single word */
+#define GUTIL_VERSION_(v1,v2,v3) \
+    ((((v1) & 0x7f) << 24) | \
+     (((v2) & 0xfff) << 12) | \
+      ((v3) & 0xfff))
 
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
-typedef struct glog_module GLogModule;
+#define GUTIL_VERSION_MAJOR_(v)   (((v) >> 24) & 0x7f)
+#define GUTIL_VERSION_MINOR_(v)   (((v) >> 12) & 0xfff)
+#define GUTIL_VERSION_MICRO_(v)   (((v) & 0xfff))
+
+/* Current compile time version as a single word */
+#define GUTIL_VERSION GUTIL_VERSION_ \
+    (GUTIL_VERSION_MAJOR, GUTIL_VERSION_MINOR, GUTIL_VERSION_MICRO)
+
+/* Runtime version as a single word */
+#define gutil_version() GUTIL_VERSION_ \
+    (gutil_version_major, gutil_version_minor, gutil_version_micro)
+
+/* Specific versions */
+#define GUTIL_VERSION_1_0_69 GUTIL_VERSION_(1,0,69)
+#define GUTIL_VERSION_1_0_70 GUTIL_VERSION_(1,0,70)
+#define GUTIL_VERSION_1_0_71 GUTIL_VERSION_(1,0,71)
 
 G_END_DECLS
 
-#endif /* GUTIL_TYPES_H */
+#endif /* GUTIL_VERSION_H */
 
 /*
  * Local Variables:

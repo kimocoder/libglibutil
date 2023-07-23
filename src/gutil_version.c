@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2014-2021 Jolla Ltd.
  * Copyright (C) 2023 Slava Monich <slava@monich.com>
  *
  * You may use this file under the terms of BSD license as follows:
@@ -30,42 +29,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GUTIL_TYPES_H
-#define GUTIL_TYPES_H
+#include "gutil_version.h"
 
-#include <glib.h>
-#include <string.h>
-#include <stdio.h>
-
-G_BEGIN_DECLS
-
-typedef char* GStrV;
-typedef struct gutil_idle_pool GUtilIdlePool;
-typedef struct gutil_idle_queue GUtilIdleQueue;
-typedef struct gutil_ints GUtilInts;
-typedef struct gutil_int_array GUtilIntArray;
-typedef struct gutil_int_history GUtilIntHistory;
-typedef struct gutil_inotify_watch GUtilInotifyWatch;
-typedef struct gutil_ring GUtilRing;
-typedef struct gutil_time_notify GUtilTimeNotify;
-typedef struct gutil_weakref GUtilWeakRef; /* Since 1.0.68 */
-
-typedef struct gutil_data {
-    const guint8* bytes;
-    gsize size;
-} GUtilData;
-
-typedef struct gutil_range {
-    const guint8* ptr;
-    const guint8* end;
-} GUtilRange; /* Since 1.0.54 */
-
-#define GLOG_MODULE_DECL(m) extern GLogModule m;
-typedef struct glog_module GLogModule;
-
-G_END_DECLS
-
-#endif /* GUTIL_TYPES_H */
+const guint gutil_version_major = GUTIL_VERSION_MAJOR;
+const guint gutil_version_minor = GUTIL_VERSION_MINOR;
+const guint gutil_version_micro = GUTIL_VERSION_MICRO;
 
 /*
  * Local Variables:

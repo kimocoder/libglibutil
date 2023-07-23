@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
- * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -35,8 +35,21 @@
 #include "gutil_misc.h"
 #include "gutil_idlepool.h"
 #include "gutil_log.h"
+#include "gutil_version.h"
 
 static TestOpt test_opt;
+
+/*==========================================================================*
+ * version
+ *==========================================================================*/
+
+static
+void
+test_version(
+    void)
+{
+    g_assert_cmpuint(gutil_version(), == ,GUTIL_VERSION);
+}
 
 /*==========================================================================*
  * disconnect
@@ -78,6 +91,36 @@ test_disconnect(
     g_assert(!id[1]);
 
     g_object_unref(obj);
+}
+
+/*==========================================================================*
+ * ref
+ *==========================================================================*/
+
+static
+void
+test_ref(
+    void)
+{
+    GObject* obj = g_object_new(TEST_OBJECT_TYPE, NULL);
+
+    g_assert(!gutil_object_ref(NULL));
+    g_assert(gutil_object_ref(obj) == obj);
+    g_object_unref(obj);
+    g_object_unref(obj);
+}
+
+/*==========================================================================*
+ * unref
+ *==========================================================================*/
+
+static
+void
+test_unref(
+    void)
+{
+    gutil_object_unref(NULL);
+    gutil_object_unref(g_object_new(TEST_OBJECT_TYPE, NULL));
 }
 
 /*==========================================================================*
@@ -124,6 +167,46 @@ test_hex2bin(
     g_assert(size == 4);
     g_assert(!memcmp(data, buf1, sizeof(buf1)));
     g_bytes_unref(bytes);
+}
+
+/*==========================================================================*
+ * bin2hex
+ *==========================================================================*/
+
+static
+void
+test_bin2hex(
+    void)
+{
+    static const guchar bin[] = { 0x89, 0xab, 0xcd, 0xef };
+    static const GUtilData data = { TEST_ARRAY_AND_SIZE(bin) };
+    char* str;
+
+    /* gutil_data2hex return NULL if data is NULL */
+    g_assert(!gutil_data2hex(NULL, FALSE));
+
+    /* Data isn't touched if len is zero */
+    str = gutil_bin2hex(NULL, 0, FALSE);
+    g_assert_cmpstr(str, == ,"");
+    g_free(str);
+
+    /* Lower case */
+    str = gutil_bin2hex(bin, sizeof(bin), FALSE);
+    g_assert_cmpstr(str, == ,"89abcdef");
+    g_free(str);
+
+    str = gutil_data2hex(&data, FALSE);
+    g_assert_cmpstr(str, == ,"89abcdef");
+    g_free(str);
+
+    /* Upper case */
+    str = gutil_bin2hex(bin, sizeof(bin), TRUE);
+    g_assert_cmpstr(str, == ,"89ABCDEF");
+    g_free(str);
+
+    str = gutil_data2hex(&data, TRUE);
+    g_assert_cmpstr(str, == ,"89ABCDEF");
+    g_free(str);
 }
 
 /*==========================================================================*
@@ -640,6 +723,23 @@ test_ptrv_length(
 }
 
 /*==========================================================================*
+ * ptrv_is_empty
+ *==========================================================================*/
+
+static
+void
+test_ptrv_is_empty(
+    void)
+{
+    static const gconstpointer ptrv0[] = { NULL };
+    static const gconstpointer ptrv1[] = { ptrv0, NULL };
+
+    g_assert(gutil_ptrv_is_empty(NULL));
+    g_assert(gutil_ptrv_is_empty(ptrv0));
+    g_assert(!gutil_ptrv_is_empty(ptrv1));
+}
+
+/*==========================================================================*
  * ptrv_free
  *==========================================================================*/
 
@@ -849,8 +949,12 @@ int main(int argc, char* argv[])
     gutil_log_default.level = g_test_verbose() ?
         GLOG_LEVEL_VERBOSE : GLOG_LEVEL_NONE;
 
+    g_test_add_func(TEST_("version"), test_version);
     g_test_add_func(TEST_("disconnect"), test_disconnect);
+    g_test_add_func(TEST_("ref"), test_ref);
+    g_test_add_func(TEST_("unref"), test_unref);
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
+    g_test_add_func(TEST_("bin2hex"), test_bin2hex);
     g_test_add_func(TEST_("hexdump"), test_hexdump);
     g_test_add_func(TEST_("parse_int"), test_parse_int);
     g_test_add_func(TEST_("parse_uint"), test_parse_uint);
@@ -864,7 +968,8 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);
-    g_test_add_func(TEST_("ptrv_lenght"), test_ptrv_length);
+    g_test_add_func(TEST_("ptrv_length"), test_ptrv_length);
+    g_test_add_func(TEST_("ptrv_is_empty"), test_ptrv_is_empty);
     g_test_add_func(TEST_("ptrv_free"), test_ptrv_free);
     g_test_add_func(TEST_("memdup"), test_memdup);
     g_test_add_func(TEST_("strlen"), test_strlen);

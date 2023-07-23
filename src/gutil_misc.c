@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
- * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -57,6 +57,27 @@ gutil_disconnect_handlers(
 }
 
 void*
+gutil_object_ref(
+    void* object) /* Since 1.0.71 */
+{
+    /* Just a NULL-tolerant version of g_object_ref() */
+    if (object) {
+        g_object_ref(object);
+    }
+    return object;
+}
+
+void
+gutil_object_unref(
+    void* object) /* Since 1.0.71 */
+{
+    /* Just a NULL-tolerant version of g_object_unref */
+    if (object) {
+        g_object_unref(object);
+    }
+}
+
+void*
 gutil_hex2bin(
     const char* str,
     gssize len,
@@ -88,6 +109,39 @@ gutil_hex2bin(
         return data;
     }
     return NULL;
+}
+
+char*
+gutil_bin2hex(
+    const void* data,
+    gsize len,
+    gboolean upper_case) /* Since 1.0.71 */
+{
+    static const char hex[] = "0123456789abcdef";
+    static const char HEX[] = "0123456789ABCDEF";
+    const char* map = upper_case ? HEX : hex;
+    const guchar* ptr = data;
+    const guchar* end = ptr + len;
+    char* out = g_malloc(2 * len + 1);
+    char* dest = out;
+
+    while (ptr < end) {
+        const guchar b = *ptr++;
+
+        *dest++ = map[(b >> 4) & 0xf];
+        *dest++ = map[b & 0xf];
+    }
+
+    *dest = 0;
+    return out;
+}
+
+char*
+gutil_data2hex(
+    const GUtilData* data,
+    gboolean upper_case) /* Since 1.0.71 */
+{
+    return data ? gutil_bin2hex(data->bytes, data->size, upper_case) : NULL;
 }
 
 GBytes*
@@ -562,7 +616,7 @@ gsize
 gutil_ptrv_length(
     const void* ptrv) /* Since 1.0.50 */
 {
-    if (G_LIKELY(ptrv)) {
+    if (ptrv) {
         gsize len = 0;
         const gconstpointer* ptr = ptrv;
 
@@ -571,6 +625,13 @@ gutil_ptrv_length(
     } else {
         return 0;
     }
+}
+
+gboolean
+gutil_ptrv_is_empty(
+    const void* ptrv) /* Since 1.0.71 */
+{
+    return !ptrv || !((gconstpointer*)ptrv)[0];
 }
 
 /* Frees NULL-terminated array of pointers and whatever they're pointing to. */

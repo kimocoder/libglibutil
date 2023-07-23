@@ -15,15 +15,29 @@ PKGS = glib-2.0 gobject-2.0
 all: debug release pkgconfig
 
 #
+# Directories
+#
+
+SRC_DIR = src
+INCLUDE_DIR = include
+BUILD_DIR = build
+DEBUG_BUILD_DIR = $(BUILD_DIR)/debug
+RELEASE_BUILD_DIR = $(BUILD_DIR)/release
+COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
+
+#
 # Library version
 #
 
-VERSION_MAJOR = 1
-VERSION_MINOR = 0
-VERSION_RELEASE = 67
+VERSION_FILE = $(INCLUDE_DIR)/gutil_version.h
+get_version = $(shell grep -E '^ *\#define +GUTIL_VERSION_$1 +[0-9]+$$' $(VERSION_FILE) | sed 's/  */ /g' | cut -d ' ' -f 3)
+
+VERSION_MAJOR := $(call get_version,MAJOR)
+VERSION_MINOR := $(call get_version,MINOR)
+VERSION_MICRO := $(call get_version,MICRO)
 
 # Version for pkg-config
-PCVERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_RELEASE)
+PCVERSION := $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_MICRO)
 
 #
 # Library name
@@ -35,7 +49,7 @@ LIB_DEV_SYMLINK = $(LIB_NAME).so
 LIB_SYMLINK1 = $(LIB_DEV_SYMLINK).$(VERSION_MAJOR)
 LIB_SYMLINK2 = $(LIB_SYMLINK1).$(VERSION_MINOR)
 LIB_SONAME = $(LIB_SYMLINK1)
-LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_RELEASE)
+LIB = $(LIB_SONAME).$(VERSION_MINOR).$(VERSION_MICRO)
 STATIC_LIB = $(LIB_NAME).a
 
 #
@@ -43,6 +57,7 @@ STATIC_LIB = $(LIB_NAME).a
 #
 
 SRC = \
+  gutil_datapack.c \
   gutil_history.c \
   gutil_idlepool.c \
   gutil_idlequeue.c \
@@ -53,18 +68,10 @@ SRC = \
   gutil_misc.c \
   gutil_ring.c \
   gutil_strv.c \
-  gutil_timenotify.c
-
-#
-# Directories
-#
-
-SRC_DIR = src
-INCLUDE_DIR = include
-BUILD_DIR = build
-DEBUG_BUILD_DIR = $(BUILD_DIR)/debug
-RELEASE_BUILD_DIR = $(BUILD_DIR)/release
-COVERAGE_BUILD_DIR = $(BUILD_DIR)/coverage
+  gutil_timenotify.c \
+  gutil_objv.c \
+  gutil_version.c \
+  gutil_weakref.c
 
 #
 # Tools and flags
@@ -77,6 +84,8 @@ WARNINGS = -Wall
 INCLUDES = -I$(INCLUDE_DIR)
 BASE_FLAGS = -fPIC
 FULL_CFLAGS = $(BASE_FLAGS) $(CFLAGS) $(DEFINES) $(WARNINGS) $(INCLUDES) \
+  -DGLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_32 \
+  -DGLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_MAX_ALLOWED \
   -MMD -MP $(shell pkg-config --cflags $(PKGS))
 FULL_LDFLAGS = $(BASE_FLAGS) $(LDFLAGS) -shared -Wl,-soname,$(LIB_SONAME) \
   $(shell pkg-config --libs $(PKGS))
@@ -93,7 +102,7 @@ DEBUG_LDFLAGS = $(FULL_LDFLAGS) $(DEBUG_FLAGS)
 RELEASE_LDFLAGS = $(FULL_LDFLAGS) $(RELEASE_FLAGS)
 DEBUG_CFLAGS = $(FULL_CFLAGS) $(DEBUG_FLAGS) -DDEBUG
 RELEASE_CFLAGS = $(FULL_CFLAGS) $(RELEASE_FLAGS) -O2
-COVERAGE_CFLAGS = $(FULL_CFLAGS) $(COVERAGE_FLAGS) --coverage
+COVERAGE_CFLAGS = $(FULL_CFLAGS) $(COVERAGE_FLAGS) -O0 --coverage
 
 #
 # Files

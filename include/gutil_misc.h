@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
- * Copyright (C) 2016-2022 Slava Monich <slava.monich@jolla.com>
  *
  * You may use this file under the terms of BSD license as follows:
  *
@@ -44,10 +44,31 @@ gutil_disconnect_handlers(
     int count);
 
 void*
+gutil_object_ref(
+    void* object); /* Since 1.0.71 */
+
+void
+gutil_object_unref(
+    void* object); /* Since 1.0.71 */
+
+void*
 gutil_hex2bin(
     const char* str,
     gssize len,
     void* data);
+
+char*
+gutil_bin2hex(
+    const void* data,
+    gsize len,
+    gboolean upper_case) /* Since 1.0.71 */
+    G_GNUC_WARN_UNUSED_RESULT;
+
+char*
+gutil_data2hex(
+    const GUtilData* data,
+    gboolean upper_case) /* Since 1.0.71 */
+    G_GNUC_WARN_UNUSED_RESULT;
 
 GBytes*
 gutil_hex2bytes(
@@ -150,6 +171,10 @@ gutil_bytes_has_suffix(
 gsize
 gutil_ptrv_length(
     const void* ptrv); /* Since 1.0.50 */
+
+gboolean
+gutil_ptrv_is_empty(
+    const void* ptrv); /* Since 1.0.71 */
 
 void
 gutil_ptrv_free(
