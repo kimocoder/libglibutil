@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2023-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
  *
  * You may use this file under the terms of BSD license as follows:
@@ -121,6 +121,36 @@ test_unref(
 {
     gutil_object_unref(NULL);
     gutil_object_unref(g_object_new(TEST_OBJECT_TYPE, NULL));
+}
+
+/*==========================================================================*
+ * source
+ *==========================================================================*/
+
+static
+gboolean
+test_source_cb(
+    gpointer data)
+{
+    g_assert_not_reached();
+    return G_SOURCE_REMOVE;
+}
+
+static
+void
+test_source(
+    void)
+{
+    guint id = 0;
+
+    g_assert(!gutil_source_clear(NULL));
+    g_assert(!gutil_source_clear(&id));
+    id = g_idle_add(test_source_cb, NULL);
+    g_assert(gutil_source_clear(&id));
+    g_assert_cmpuint(id, == ,0);
+
+    g_assert(!gutil_source_remove(0));
+    g_assert(gutil_source_remove(g_idle_add(test_source_cb, NULL)));
 }
 
 /*==========================================================================*
@@ -580,6 +610,35 @@ test_data_copy(
 }
 
 /*==========================================================================*
+ * data_copy_as_variant
+ *==========================================================================*/
+
+static
+void
+test_data_copy_as_variant(
+    void)
+{
+    static const guint8 bytes[] = { '1', '2', '3' };
+    GVariant* var;
+    GUtilData data;
+
+    g_assert(!gutil_data_copy_as_variant(NULL));
+
+    memset(&data, 0, sizeof(data));
+    var = gutil_data_copy_as_variant(&data);
+    g_assert(var);
+    g_assert_cmpuint(g_variant_get_size(var), == ,0);
+    g_variant_unref(g_variant_ref_sink(var));
+
+    TEST_INIT_DATA(data, bytes);
+    var = gutil_data_copy_as_variant(&data);
+    g_assert(var);
+    g_assert_cmpuint(data.size, == ,g_variant_get_size(var));
+    g_assert(!memcmp(data.bytes, g_variant_get_data(var), data.size));
+    g_variant_unref(g_variant_ref_sink(var));
+}
+
+/*==========================================================================*
  * bytes_concat
  *==========================================================================*/
 
@@ -983,6 +1042,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("version"), test_version);
     g_test_add_func(TEST_("disconnect"), test_disconnect);
     g_test_add_func(TEST_("ref"), test_ref);
+    g_test_add_func(TEST_("source"), test_source);
     g_test_add_func(TEST_("unref"), test_unref);
     g_test_add_func(TEST_("hex2bin"), test_hex2bin);
     g_test_add_func(TEST_("bin2hex"), test_bin2hex);
@@ -997,6 +1057,7 @@ int main(int argc, char* argv[])
     g_test_add_func(TEST_("data_from_bytes"), test_data_from_bytes);
     g_test_add_func(TEST_("data_from_string"), test_data_from_string);
     g_test_add_func(TEST_("data_copy"), test_data_copy);
+    g_test_add_func(TEST_("data_copy_as_variant"), test_data_copy_as_variant);
     g_test_add_func(TEST_("bytes_concat"), test_bytes_concat);
     g_test_add_func(TEST_("bytes_xor"), test_bytes_xor);
     g_test_add_func(TEST_("bytes_equal"), test_bytes_equal);

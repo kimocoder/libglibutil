@@ -1,6 +1,6 @@
 Name: libglibutil
 
-Version: 1.0.72
+Version: 1.0.80
 Release: 0
 Summary: Library of glib utilities
 License: BSD
@@ -15,6 +15,9 @@ BuildRequires: pkgconfig(glib-2.0) >= %{glib_version}
 # license macro requires rpm >= 4.11
 BuildRequires: pkgconfig(rpm)
 %define license_support %(pkg-config --exists 'rpm >= 4.11'; echo $?)
+
+# make_build macro appeared in rpm 4.12
+%{!?make_build: %define make_build make %{_smp_mflags}}
 
 Requires: glib2 >= %{glib_version}
 Requires(post): /sbin/ldconfig
@@ -35,7 +38,7 @@ This package contains the development library for %{name}.
 %setup -q
 
 %build
-make %{_smp_mflags} LIBDIR=%{_libdir} KEEP_SYMBOLS=1 release pkgconfig
+%make_build LIBDIR=%{_libdir} KEEP_SYMBOLS=1 release pkgconfig
 
 %install
 make LIBDIR=%{_libdir} DESTDIR=%{buildroot} install-dev

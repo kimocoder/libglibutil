@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2023 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2019 Jolla Ltd.
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
  */
 
 #include "gutil_timenotify.h"
+#include "gutil_misc.h"
 #include "gutil_log.h"
 
 #include <glib-object.h>
@@ -39,6 +40,16 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/timerfd.h>
+
+#ifdef __clang__
+#define NO_SANITIZE_CFI __attribute__((no_sanitize("cfi")))
+#else
+#define NO_SANITIZE_CFI
+#endif
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 #ifndef TFD_TIMER_CANCEL_ON_SET
 #  define TFD_TIMER_CANCEL_ON_SET (1 << 1)
@@ -137,13 +148,15 @@ gutil_time_notify_callback(
         self->io_watch_id = 0;
         return G_SOURCE_REMOVE;
     } else {
+        G_GNUC_UNUSED GIOStatus status;
         gsize bytes_read = 0;
         GError* error = NULL;
         guint64 exp;
 
         gutil_time_notify_ref(self);
-        g_io_channel_read_chars(self->io_channel, (void*)&exp, sizeof(exp),
+        status = g_io_channel_read_chars(self->io_channel, (void*)&exp, sizeof(exp),
             &bytes_read, &error);
+        GASSERT(status == G_IO_STATUS_ERROR && error);
         if (error) {
             /* ECANCELED is expected */
             GDEBUG("%s", error->message);
@@ -186,6 +199,7 @@ gutil_time_notify_init(
     }
 }
 
+NO_SANITIZE_CFI
 static
 void
 gutil_time_notify_finalize(
@@ -194,9 +208,7 @@ gutil_time_notify_finalize(
     GUtilTimeNotify* self = THIS(object);
 
     if (self->io_channel) {
-        if (self->io_watch_id) {
-            g_source_remove(self->io_watch_id);
-        }
+        gutil_source_remove(self->io_watch_id);
         g_io_channel_shutdown(self->io_channel, FALSE, NULL);
         g_io_channel_unref(self->io_channel);
     }

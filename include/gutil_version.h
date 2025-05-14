@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2023-2025 Slava Monich <slava@monich.com>
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,8 +46,8 @@ G_BEGIN_DECLS
 
 #define GUTIL_VERSION_MAJOR   1
 #define GUTIL_VERSION_MINOR   0
-#define GUTIL_VERSION_MICRO   72
-#define GUTIL_VERSION_STRING  "1.0.72"
+#define GUTIL_VERSION_MICRO   80
+#define GUTIL_VERSION_STRING  "1.0.80"
 
 extern const guint gutil_version_major; /* GUTIL_VERSION_MAJOR */
 extern const guint gutil_version_minor; /* GUTIL_VERSION_MINOR */
@@ -76,6 +76,14 @@ extern const guint gutil_version_micro; /* GUTIL_VERSION_MICRO */
 #define GUTIL_VERSION_1_0_70 GUTIL_VERSION_(1,0,70)
 #define GUTIL_VERSION_1_0_71 GUTIL_VERSION_(1,0,71)
 #define GUTIL_VERSION_1_0_72 GUTIL_VERSION_(1,0,72)
+#define GUTIL_VERSION_1_0_73 GUTIL_VERSION_(1,0,73)
+#define GUTIL_VERSION_1_0_74 GUTIL_VERSION_(1,0,74)
+#define GUTIL_VERSION_1_0_75 GUTIL_VERSION_(1,0,75))
+#define GUTIL_VERSION_1_0_76 GUTIL_VERSION_(1,0,76))
+#define GUTIL_VERSION_1_0_77 GUTIL_VERSION_(1,0,77))
+#define GUTIL_VERSION_1_0_78 GUTIL_VERSION_(1,0,78))
+#define GUTIL_VERSION_1_0_79 GUTIL_VERSION_(1,0,79))
+#define GUTIL_VERSION_1_0_80 GUTIL_VERSION_(1,0,80))
 
 G_END_DECLS
 

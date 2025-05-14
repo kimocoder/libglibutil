@@ -1,8 +1,8 @@
 /*
- * Copyright (C) 2023 Slava Monich <slava@monich.com>
+ * Copyright (C) 2016-2024 Slava Monich <slava@monich.com>
  * Copyright (C) 2016-2022 Jolla Ltd.
  *
- * You may use this file under the terms of BSD license as follows:
+ * You may use this file under the terms of the BSD license as follows:
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,6 +37,10 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
+
+#if __GNUC__ >= 4
+#pragma GCC visibility push(default)
+#endif
 
 void
 gutil_disconnect_handlers(
@@ -75,6 +79,32 @@ gutil_object_unref(
     if (object) {
         g_object_unref(object);
     }
+}
+
+gboolean
+gutil_source_remove(
+    guint id) /* Since 1.0.78 */
+{
+    /* Zero-tolerant version of g_source_remove */
+    if (id) {
+        g_source_remove(id);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
+gutil_source_clear(
+    guint* id) /* Since 1.0.78 */
+{
+    /* Yet another zero-tolerant version of g_source_remove */
+    if (id && *id) {
+        g_source_remove(*id);
+        *id = 0;
+        return TRUE;
+    }
+    return FALSE;
+
 }
 
 void*
@@ -190,6 +220,7 @@ gutil_hexdump(
         }
         if (i < len) {
             const guchar b = bytes[i];
+
             *ptr++ = hex[(b >> 4) & 0xf];
             *ptr++ = hex[b & 0xf];
         } else {
@@ -223,7 +254,8 @@ gutil_strstrip(
 
     if (g_ascii_isspace(str[0]) || g_ascii_isspace(str[len - 1])) {
         /* Need to modify the original string */
-        return (*tmp = g_strstrip(gutil_memdup(str, len + 1)));
+        *tmp = gutil_memdup(str, len + 1);
+        return g_strstrip(*tmp);
     } else {
         /* The original string is fine as is */
         return str;
@@ -411,6 +443,21 @@ gutil_data_copy(
      * has to be freed with a single g_free()
      */
     return data ? gutil_data_new(data->bytes, data->size) : NULL;
+}
+
+GVariant*
+gutil_data_copy_as_variant(
+    const GUtilData* data) /* Since 1.0.74 */
+{
+    /*
+     * Return a floating reference to a new array GVariant instance
+     * or NULL if the input is NULL.
+     */
+    return !data ? NULL : data->size ?
+        g_variant_new_fixed_array(G_VARIANT_TYPE_BYTE,
+             data->bytes, data->size, 1) :
+        g_variant_new_from_data(G_VARIANT_TYPE_BYTESTRING,
+             NULL, 0, TRUE, NULL, NULL);
 }
 
 gboolean
